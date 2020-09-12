@@ -30,6 +30,6 @@ try:
 	    sleep(1)
 
 except KeyboardInterrupt:
-        pass
+    pass
 
 GPIO.cleanup()
