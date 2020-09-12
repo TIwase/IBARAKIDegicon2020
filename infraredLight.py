@@ -14,23 +14,21 @@ for port in ports:
 
 try:
         while True:
-		GPIO.output(red,0)
-		GPIO.output(green,0)
-		GPIO.output(blue,0)
+            for port in ports:	
+                GPIO.output(port,0)
 
-		if(GPIO.input(infr) == GPIO.HIGH):
-			GPIO.output(red,1)
-			GPIO.output(green,0)
-			GPIO.output(blue,0)
-			print GPIO.input(infr)
-			sleep(1)
+	    if(GPIO.input(infr) == GPIO.HIGH):
+		    GPIO.output(red,1)
+		    GPIO.output(green,0)
+		    GPIO.output(blue,0)
+		    print GPIO.input(infr)
+		    sleep(1)
 
-		elif(GPIO.input(infr) == GPIO.LOW):
-			GPIO.output(red,0)
-			GPIO.output(green,0)
-			GPIO.output(blue,0)
-			print GPIO.input(infr)
-			sleep(1)
+	    elif(GPIO.input(infr) == GPIO.LOW):
+                for port in ports:	
+                    GPIO.output(port,0)
+		print GPIO.input(infr)
+		sleep(1)
 
 except KeyboardInterrupt:
         pass
