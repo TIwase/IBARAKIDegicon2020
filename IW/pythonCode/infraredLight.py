@@ -1,10 +1,10 @@
 import RPi.GPIO as GPIO
 from time import sleep
 
-red = 17
-green = 27
-blue = 22
-infr = 18
+red = 22
+green = 17
+blue = 27
+infr = 13
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(infr, GPIO.IN)
 
