@@ -21,6 +21,7 @@ url = "https://notify-api.line.me/api/notify"
 token = os.getenv('LINE_NOTIFY_TOKEN', None)
 headers = {"Authorization" : "Bearer "+ token}
 logpath = os.getcwd()
+detecTime = ''
 
 # ----------------------------------------
 # 初期設定
@@ -39,8 +40,7 @@ def getInfrared():
         GPIO.output(green, 0)
         GPIO.output(blue, 0)
         sleep(1)
-
-    elif(GPIO.input(infr) == GPIO.LOW):
+    elif GPIO.input(infr) == GPIO.LOW:
         for port in ports:
             GPIO.output(port,0)
         sleep(1)
@@ -56,7 +56,7 @@ def getGasVal():
 # 5分毎にガスセンサ値のログを出力
 def outGasLog(dt_now, gasVal):
     if int(dt_now.strftime('%M')) % 5 == 0 and int(dt_now.strftime('%S'))  == 0:
-        logfile = logpath + '/' + dt_now.strftime('%Y-%m-%d') + '_gas.log'
+        logfile = logpath + '/gaslog/' + dt_now.strftime('%Y-%m-%d') + '_gas.log'
         logger = getLogger(dt_now.strftime('%Y-%m-%d %H:%M %S'))    # 同じ名前を付けるとログ出力が重複されるので注意
         sh = StreamHandler()
         logger.setLevel(DEBUG)
@@ -66,7 +66,7 @@ def outGasLog(dt_now, gasVal):
         if gasVal < gasTH:
             logger.log(20, dt_now.strftime('%Y-%m-%d %H:%M %S') + ': [INFO] ' + str(gasVal))
         elif gasVal > gasTH:
-            logger.log(30, dt_now.strftime('%Y-%m-%d %H:%M %S') + ': [WARN] The current gas value exceeded the threshold' + str(gasVal))
+            logger.log(30, dt_now.strftime('%Y-%m-%d %H:%M %S') + ': [WARN] ' + str(gasVal) + ' The current gas value exceeded the threshold ')
 
 if __name__ == '__main__':
     print("START GAS DETECTION!")
@@ -77,11 +77,14 @@ if __name__ == '__main__':
             gasVal = getGasVal()
             outGasLog(dt_now, gasVal)
             getInfrared()
+            if detecTime != dt_now.strftime('%M'):
+                flag = 0
 
             if gasVal > gasTH and GPIO.input(infr) == GPIO.HIGH and flag == 0:
                 message = "ガスセンサ値の閾値超過を検知しました。ガス漏れしている可能性があります。"
                 payload = {"message" :  message}
                 r = requests.post(url, headers = headers, params=payload)
+                detecTime = dt_now.strftime('%M')
                 flag = 1
 
     except KeyboardInterrupt:
