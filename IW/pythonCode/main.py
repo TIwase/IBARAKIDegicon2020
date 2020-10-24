@@ -7,14 +7,16 @@ import RPi.GPIO as GPIO
 from time import sleep
 from logging import getLogger, StreamHandler, FileHandler, DEBUG
 
-red = 22
-green = 17
-blue = 27
-infr = 13
-ports = [red, green, blue]
-buzzer = 25
+rPin = 22
+gPin = 17
+bPin = 27
+infrPin = 13
+ports = [rPin, gPin, bPin]
+beepPin = 25
 flag = 0
 gasTH = 300
+freq = 600
+pwm = GPIO.PWM(beepPin, freq)
 ser = serial.Serial('/dev/ttyACM0', 115200)
 #ser = serial.Serial('/dev/serial0', 115200)
 url = "https://notify-api.line.me/api/notify"
@@ -27,22 +29,23 @@ detecTime = ''
 # 初期設定
 def init():
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(infr, GPIO.IN)
+    GPIO.setup(infrPin, GPIO.IN)
+    GPIO.setup(beepPin, GPIO.IN)
     for port in ports:
         GPIO.setup(port, GPIO.OUT)
-        GPIO.output(port,0)
+        GPIO.output(port, GPIO.LOW)
 
 # ----------------------------------------
 # 赤外線検知及びLED点灯
 def getInfrared():
-    if GPIO.input(infr) == GPIO.HIGH:
-        GPIO.output(red, 1)
-        GPIO.output(green, 0)
-        GPIO.output(blue, 0)
+    if GPIO.input(infrPin) == GPIO.HIGH:
+        GPIO.output(rPin, GPIO.HIGH)
+        GPIO.output(gPin, GPIO.LOW)
+        GPIO.output(bPin, GPIO.LOW)
         sleep(1)
-    elif GPIO.input(infr) == GPIO.LOW:
+    elif GPIO.input(infrPin) == GPIO.LOW:
         for port in ports:
-            GPIO.output(port,0)
+            GPIO.output(port, GPIO.LOW)
         sleep(1)
 
 # ----------------------------------------
@@ -68,6 +71,14 @@ def outGasLog(dt_now, gasVal):
         elif gasVal > gasTH:
             logger.log(30, dt_now.strftime('%Y-%m-%d %H:%M %S') + ': [WARN] ' + str(gasVal) + ' The current gas value exceeded the threshold ')
 
+# ----------------------------------------
+# ブザーを鳴らす
+def beep():
+    pwm.start(50)
+    sleep(3)
+    pwm.stop()
+    sleep(1)
+
 if __name__ == '__main__':
     print("START GAS DETECTION!")
     init()
@@ -80,8 +91,9 @@ if __name__ == '__main__':
             if detecTime != dt_now.strftime('%M'):
                 flag = 0
 
-            if gasVal > gasTH and GPIO.input(infr) == GPIO.HIGH and flag == 0:
-                message = "ガスセンサ値の閾値超過を検知しました。ガス漏れしている可能性があります。"
+            if gasVal > gasTH and GPIO.input(infrPin) == GPIO.HIGH and flag == 0:
+                beep()
+                message = "ガスセンサ値の閾値超過を検知しました。ガス漏れしてい る可能性があります。"
                 payload = {"message" :  message}
                 r = requests.post(url, headers = headers, params=payload)
                 detecTime = dt_now.strftime('%M')
