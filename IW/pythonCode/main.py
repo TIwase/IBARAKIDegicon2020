@@ -16,7 +16,6 @@ beepPin = 25
 flag = 0
 gasTH = 300
 freq = 600
-pwm = GPIO.PWM(beepPin, freq)
 ser = serial.Serial('/dev/ttyACM0', 115200)
 #ser = serial.Serial('/dev/serial0', 115200)
 url = "https://notify-api.line.me/api/notify"
@@ -30,7 +29,7 @@ detecTime = ''
 def init():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(infrPin, GPIO.IN)
-    GPIO.setup(beepPin, GPIO.IN)
+    GPIO.setup(beepPin, GPIO.OUT)
     for port in ports:
         GPIO.setup(port, GPIO.OUT)
         GPIO.output(port, GPIO.LOW)
@@ -79,9 +78,12 @@ def beep():
     pwm.stop()
     sleep(1)
 
+# ----------------------------------------
+# メインプログラム
 if __name__ == '__main__':
     print("START GAS DETECTION!")
     init()
+    pwm = GPIO.PWM(beepPin, freq)
     try:
         while True:
             dt_now = datetime.datetime.now()
