@@ -5,10 +5,10 @@ import requests
 #import serial
 import RPi.GPIO as GPIO
 
-red = 17
-green = 27
-blue = 22
-infr = 18
+red = 22
+green = 17
+blue = 27
+infr = 13
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(infr, GPIO.IN)
 
@@ -27,20 +27,23 @@ headers = {"Authorization" : "Bearer "+ token}
 flag = 0
 print("START INFRARED LIGHT DETECTION!")
 
-while True:
-    dt_now = datetime.datetime.now()
-    #raw_data = ser.readline()
-    #infrVal = raw_data.strip().decode('utf-8')
-    #print("[" + dt_now.strftime('%Y-%m-%d %H:%M:%S') + "] " + infrVal)
+try:
+    while True:
+        dt_now = datetime.datetime.now()
+        #raw_data = ser.readline()
+        #infrVal = raw_data.strip().decode('utf-8')
+        #print("[" + dt_now.strftime('%Y-%m-%d %H:%M:%S') + "] " + infrVal)
 
-    if GPIO.input(infr) == GPIO.HIGH and flag == 0:
-        message = "人感検知しました、部屋に侵入者がいます。"
-        payload = {"message" :  message}
-        r = requests.post(url, headers = headers, params=payload)
-        flag = 1
-        GPIO.output(red,1)
-        GPIO.output(green,0)
-        GPIO.output(blue,0)
+        if GPIO.input(infr) == GPIO.HIGH and flag == 0:
+            message = "人感検知しました、部屋に侵入者がいます。"
+            payload = {"message" :  message}
+            r = requests.post(url, headers = headers, params=payload)
+            flag = 1
+            GPIO.output(red,1)
+            GPIO.output(green,0)
+            GPIO.output(blue,0)
+except KeyboardInterrupt:
+    pass
 
 GPIO.cleanup()
-ser.close()
+#ser.close()
