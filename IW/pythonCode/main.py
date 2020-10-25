@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
             if gasVal > gasTH and GPIO.input(infrPin) == GPIO.LOW and flag == 0:
                 beep()
-                message = "ガスセンサ値の閾値超過を検知しました。ガス漏れしてい る可能性があります。"
+                message = "ガスセンサ値の閾値超過を検知しました。ガス漏れしている可能性があります。"
                 payload = {"message" :  message}
                 r = requests.post(url, headers = headers, params=payload)
                 detecTime = dt_now.strftime('%M')
