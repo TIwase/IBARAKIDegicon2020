@@ -14,7 +14,7 @@ infrPin = 13
 ports = [rPin, gPin, bPin]
 beepPin = 25
 flag = 0
-gasTH = 300
+gasTH = 70
 freq = 600
 ser = serial.Serial('/dev/ttyACM0', 115200)
 #ser = serial.Serial('/dev/serial0', 115200)
@@ -57,7 +57,7 @@ def getGasVal():
 # ----------------------------------------
 # 5分毎にガスセンサ値のログを出力
 def outGasLog(dt_now, gasVal):
-    if int(dt_now.strftime('%M')) % 5 == 0 and int(dt_now.strftime('%S'))  == 0:
+    if int(dt_now.strftime('%S'))  == 0:
         logfile = logpath + '/gaslog/' + dt_now.strftime('%Y-%m-%d') + '_gas.log'
         logger = getLogger(dt_now.strftime('%Y-%m-%d %H:%M %S'))    # 同じ名前を付けるとログ出力が重複されるので注意
         sh = StreamHandler()
@@ -93,7 +93,7 @@ if __name__ == '__main__':
             if detecTime != dt_now.strftime('%M'):
                 flag = 0
 
-            if gasVal > gasTH and GPIO.input(infrPin) == GPIO.HIGH and flag == 0:
+            if gasVal > gasTH and GPIO.input(infrPin) == GPIO.LOW and flag == 0:
                 beep()
                 message = "ガスセンサ値の閾値超過を検知しました。ガス漏れしてい る可能性があります。"
                 payload = {"message" :  message}
